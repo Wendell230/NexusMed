@@ -1,0 +1,7 @@
+<h2>Atendimentos</h2>
+<a href="{% url 'atendimento_create' %}">Novo Atendimento</a>
+<ul>
+  {% for atendimento in atendimentos %}
+    <li>{{ atendimento.titulo }} - {{ atendimento.paciente.nome }}</li>
+  {% endfor %}
+</ul>

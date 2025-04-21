@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Novo Atendimento{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Novo Atendimento</h2>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label for="id_paciente" class="form-label">Paciente</label>
+            {{ form.paciente|add_class:"form-select" }}
+        </div>
+
+        <div class="col-md-6">
+            <label for="id_titulo" class="form-label">Título</label>
+            {{ form.titulo|add_class:"form-control" }}
+        </div>
+
+        <div class="col-md-6">
+            <label for="id_data_inicio" class="form-label">Data e Hora Início</label>
+            {{ form.data_inicio|add_class:"form-control" }}
+        </div>
+
+        <div class="col-md-6">
+            <label for="id_data_fim" class="form-label">Data e Hora Fim</label>
+            {{ form.data_fim|add_class:"form-control" }}
+        </div>
+
+        <div class="col-12">
+            <label for="id_observacoes" class="form-label">Observações</label>
+            {{ form.observacoes|add_class:"form-control" }}
+        </div>
+
+        <div class="col-12 text-end">
+            <button type="submit" class="btn btn-primary mt-3">Salvar Atendimento</button>
+        </div>
+    </div>
+</form>
+{% endblock %}

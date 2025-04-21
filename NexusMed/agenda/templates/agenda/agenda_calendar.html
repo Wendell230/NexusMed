@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Agenda{% endblock %}
+
+{% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+<style>
+    #calendar {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h3 class="mb-4"><i class="bi bi-calendar-week me-2"></i>Agenda</h3>
+
+<div id="calendar"></div>
+
+<!-- Modal com Formulário de Atendimento -->
+<div class="modal fade" id="novoAtendimentoModal" tabindex="-1" aria-labelledby="novoAtendimentoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <form id="formAgendamento" method="post" class="modal-content">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="novoAtendimentoModalLabel"><i class="bi bi-calendar-plus me-1"></i> Novo Atendimento</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Paciente</label>
+            <select name="paciente" class="form-select" required>
+              {% for paciente in pacientes %}
+                <option value="{{ paciente.id }}">{{ paciente.nome }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Título</label>
+            <input type="text" name="titulo" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Início</label>
+            <input type="datetime-local" name="data_inicio" id="inputDataInicio" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Fim</label>
+            <input type="datetime-local" name="data_fim" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Observações</label>
+            <textarea name="observacoes" class="form-control" rows="2"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-success"><i class="bi bi-check-circle me-1"></i>Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const calendarEl = document.getElementById('calendar');
+    
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'timeGridWeek',
+            locale: 'pt-br',
+            selectable: true,
+            events: '{% url "atendimentos_json" %}',
+            dateClick: function(info) {
+                const input = document.getElementById('inputDataInicio');
+                input.value = info.dateStr.slice(0,16);  // Format: yyyy-MM-ddTHH:mm
+                new bootstrap.Modal(document.getElementById('novoAtendimentoModal')).show();
+            }
+        });
+    
+        calendar.render();
+    
+        const form = document.getElementById('formAgendamento');
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(form);
+            fetch("{% url 'atendimento_create_ajax' %}", {
+                method: "POST",
+                headers: {'X-CSRFToken': formData.get('csrfmiddlewaretoken')},
+                body: formData
+            })
+            .then(resp => resp.json())
+            .then(data => {
+                if (data.sucesso) {
+                    calendar.refetchEvents();
+                    bootstrap.Modal.getInstance(document.getElementById('novoAtendimentoModal')).hide();
+                    form.reset();
+                } else {
+                    alert("Erro ao salvar.");
+                }
+            });
+        });
+    });
+</script>
+    
+{% endblock %}
